@@ -1,4 +1,4 @@
-- name: resolv.conf kontrol ve nameserver ekleme
+- name: resolv.conf içeriğini görüntüle
   hosts: all
   gather_facts: no
 
@@ -11,14 +11,6 @@
     - name: stdout'u fact olarak kaydet
       set_fact:
         resolv_text: "{{ resolv_out.stdout }}"
-
-    - name: nameserver 8.8.8.8 yoksa ekle
-      lineinfile:
-        path: /etc/resolv.conf
-        line: "nameserver 8.8.8.8"
-        state: present
-      become: yes
-      when: "'nameserver 8.8.8.8' not in resolv_text"
 
     - name: resolv.conf içeriğini göster
       ansible.builtin.debug:
