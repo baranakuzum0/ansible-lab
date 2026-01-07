@@ -1,19 +1,24 @@
-- name: /etc/resolv.conf içindeki nameserver'ları listele
+- name: 8.8.8.8 DNS kontrolü
   hosts: all
   gather_facts: no
-  become: yes
 
   tasks:
     - name: resolv.conf dosyasını oku
       ansible.builtin.command: cat /etc/resolv.conf
       register: resolv_out
+      become: yes
+      changed_when: false
 
     - name: nameserver satırlarını ayıkla
       set_fact:
-        dns_servers: "{{ resolv_out.stdout_lines | select('search', '^nameserver') | list }}"
+        nameservers: "{{ resolv_out.stdout_lines | select('search', '^nameserver') | list }}"
 
-    - name: Bulunan nameserver'ları göster
+    - name: 8.8.8.8 VAR mı?
       ansible.builtin.debug:
-        msg:
-          - "Sunucuda tanımlı DNS sunucuları:"
-          - "{{ dns_servers }}"
+        msg: "✅ {{ inventory_hostname }} → 8.8.8.8 VAR"
+      when: "'nameserver 8.8.8.8' in nameservers"
+
+    - name: 8.8.8.8 YOK mu?
+      ansible.builtin.debug:
+        msg: "❌ {{ inventory_hostname }} → 8.8.8.8 YOK"
+      when: "'nameserver 8.8.8.8' not in nameservers"
