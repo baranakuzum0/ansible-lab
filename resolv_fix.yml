@@ -9,17 +9,18 @@
       ansible.builtin.command: cat /etc/resolv.conf
       register: resolv_out
 
-    - name: nameserver satırlarını ayıkla
+    - name: nameserver IP'lerini ayıkla
       set_fact:
         nameservers: >-
           {{
             resolv_out.stdout_lines
             | select('match', '^nameserver')
-            | map('regex_replace', '^nameserver\\s+', '')
+            | map('split', ' ')
+            | map('last')
             | list
           }}
 
-    - name: Bulunan nameserver'ları göster
+    - name: Bulunan nameserver IP'lerini göster
       ansible.builtin.debug:
         msg:
           - "Sunucuda tanımlı DNS sunucuları:"
