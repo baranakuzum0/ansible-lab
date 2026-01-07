@@ -1,27 +1,19 @@
----
 - name: /etc/resolv.conf içindeki nameserver'ları listele
   hosts: all
-  become: yes
   gather_facts: no
+  become: yes
 
   tasks:
     - name: resolv.conf dosyasını oku
       ansible.builtin.command: cat /etc/resolv.conf
       register: resolv_out
 
-    - name: nameserver IP'lerini ayıkla
+    - name: nameserver satırlarını ayıkla
       set_fact:
-        nameservers: >-
-          {{
-            resolv_out.stdout_lines
-            | select('match', '^nameserver')
-            | map('split', ' ')
-            | map('last')
-            | list
-          }}
+        dns_servers: "{{ resolv_out.stdout_lines | select('search', '^nameserver') | list }}"
 
-    - name: Bulunan nameserver IP'lerini göster
+    - name: Bulunan nameserver'ları göster
       ansible.builtin.debug:
         msg:
           - "Sunucuda tanımlı DNS sunucuları:"
-          - "{{ nameservers }}"
+          - "{{ dns_servers }}"
